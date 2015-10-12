@@ -9,26 +9,44 @@ import Debug exposing ( log )
 import Keyboard exposing (..)
 
 
-import Html exposing (Html, Attribute, text, toElement, div, input, h1, h3)
+import Html exposing (Html, fromElement, Attribute, text, toElement, div, input, h1, h2, node)
 import Html.Attributes exposing (..)
 import Html.Events exposing (on, targetValue)
 
 
-main : Signal Element
+main : Signal Html
 main = 
   Signal.map3 renderScene Window.dimensions (every (50 * millisecond)) (timestamp Keyboard.enter)
   --(fpsWhen 5 (Signal.constant True))
 
-renderScene: (Int, Int) -> Float -> (Float, a) -> Element
+heading: Html
+heading =
+  div [style [("position", "absolute"),
+        ("z-index", "100"),
+        ("width", "100%")]] 
+  [
+    h1 [style [("text-align", "center"), ("margin", "0"), ("color", "white"), ("font-size", "96pt"), ("font-family", "Creepster")]] [Html.text "Scream"]
+  , h2 [style [("text-align", "center"), ("margin", "0"), ("color", "white"), ("font-size", "48pt"), ("font-family", "Creepster")]] [Html.text "into the void"]
+  ]
+
+css : String -> Html
+css path =
+  node "link" [ rel "stylesheet", href path ] []
+
+renderScene: (Int, Int) -> Float -> (Float, a) -> Html
 renderScene (width, height) time (enterPressed, _) =
   let 
     angle = (toFloat ((round (6 * inSeconds time)) % 360))
     sinceEnter = round ((time - enterPressed) / 100)
-    shrinkingHeight = toFloat (64 - (3 * sinceEnter))
+    shrinkingHeight = toFloat (72 - (3 * sinceEnter))
     spinningAwayAngle = toFloat (60 + (24 * sinceEnter))
   in
     --log ("delay: " ++ (toString (inSeconds delay))) <|
-    collage width height
+    div [] 
+    [
+      css "https://fonts.googleapis.com/css?family=Creepster"
+    ,  heading
+    ,  fromElement (collage width height
       [ 
         --toForm (h1 [] [Html.text "Scream!"])
         rect (toFloat width) (toFloat height) |> filled black |> move(0, 0)
@@ -36,4 +54,5 @@ renderScene (width, height) time (enterPressed, _) =
       --, rotate (degrees ((delay - 200.0) * 30)) (toForm (centered (Text.height (((delay - 200.0) + 1) * 8) (color white (fromString ("Message will go here " ++ (toString (delay - 200.0) )))))))
       , rotate (degrees spinningAwayAngle) (toForm (centered (Text.height shrinkingHeight  (color white (fromString ("Message will go here " ++ (toString sinceEnter)))))))
       , rotate (degrees angle) (toForm (centered (color red (fromString ("Scream into the void : " ++ (toString angle))))))
-      ]
+      ])
+    ]
