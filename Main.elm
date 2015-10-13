@@ -12,15 +12,11 @@ import Html.Attributes exposing (..)
 import Html.Events exposing (on, targetValue)
 import Signal exposing (Address, mailbox)
 
---import StartApp.Simple exposing (start)
-
 type alias Model = String
 
 main : Signal Html
 main = 
   Signal.map4 renderScene myMailbox.signal (every (50 * millisecond)) (timestamp Keyboard.enter) Window.dimensions
-  --(fpsWhen 5 (Signal.constant True))
-
 
 heading: Html
 heading =
@@ -37,7 +33,6 @@ inputArea message show =
   let 
     inputStyles = if show then [("display", "none")] else [("display", "block"), ("width", "400px"), ("height", "100px"), ("font-size", "32pt")]
   in
-    --fromElement (container 300 300 middle (show "Try this with html."))
     div [style [("position", "absolute"),
             ("z-index", "100"),
             ("width", "100%"),
@@ -69,20 +64,26 @@ renderScene message time (enterPressed, _) (width, height) =
     showInput = (sinceEnter < 40)
     spinnyMessage = if showInput then message else ""
   in
-    --log ("delay: " ++ (toString (inSeconds delay))) <|
     div [] 
     [
       css "https://fonts.googleapis.com/css?family=Creepster"
-    ,  heading
-    ,  inputArea message showInput
-    ,  fromElement (collage width height
+    , heading
+    , inputArea message showInput
+    , fromElement (collage width height
       [ 
         rect (toFloat width) (toFloat height) |> filled black |> move(0, 0)
       , rotate (degrees angle) (toForm (image (width * 2) (height * 2) "/images/void_compressed.jpg"))
       , rotate (degrees spinningAwayAngle) (toForm (centered (Text.height shrinkingHeight (color white (fromString spinnyMessage)))))
-      --, rotate (degrees angle) (toForm (centered (color red (fromString ("Scream into the void : " ++ (toString angle))))))
       ])
     ]
 
 myMailbox : { address : Address String, signal : Signal String }
 myMailbox = Signal.mailbox ""
+
+port shoutOut : Signal String
+port shoutOut =
+    (Signal.map2 signalMessageOnEnter Keyboard.enter myMailbox.signal)
+
+signalMessageOnEnter : Bool -> String -> String
+signalMessageOnEnter enterPressed message =
+  if enterPressed == True then message else ""
