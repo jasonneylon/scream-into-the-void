@@ -1,4 +1,3 @@
-
 import Graphics.Collage exposing (..)
 import Graphics.Element exposing (image, fittedImage, croppedImage, Element, centered, show, middle, container)
 import Color exposing (red, black, white)
@@ -12,11 +11,14 @@ import Html.Attributes exposing (..)
 import Html.Events exposing (on, targetValue)
 import Signal exposing (Address, mailbox)
 
-type alias Model = String
+--http://screamintothevoid.com/
+
+messageMailbox : { address : Address String, signal : Signal String }
+messageMailbox = Signal.mailbox ""
 
 main : Signal Html
 main = 
-  Signal.map4 renderScene myMailbox.signal (every (50 * millisecond)) (timestamp Keyboard.enter) Window.dimensions
+  Signal.map4 renderTheVoid messageMailbox.signal (every (50 * millisecond)) (timestamp Keyboard.enter) Window.dimensions
 
 heading: Html
 heading =
@@ -31,21 +33,31 @@ heading =
 inputArea : String -> Bool -> Html
 inputArea message show =
   let 
-    inputStyles = if show then [("display", "none")] else [("display", "block"), ("width", "400px"), ("height", "100px"), ("font-size", "32pt")]
+    visibleInputStyles = 
+      [
+          ("display", "block")
+        , ("width", "600px")
+        , ("height", "100px")
+        , ("font-size", "32pt")
+      ]
+    inputStyles = if show then [("display", "none")] else visibleInputStyles
   in
-    div [style [("position", "absolute"),
-            ("z-index", "100"),
-            ("width", "100%"),
-            ("height", "100%"),
-            ("display", "flex"),
-            ("justify-content", "center"),
-            ("align-items", "center")
-            ]] 
+    div [style 
+          [
+            ("position", "absolute")
+          , ("z-index", "100")
+          , ("width", "100%")
+          , ("height", "100%")
+          , ("display", "flex")
+          , ("justify-content", "center")
+          , ("align-items", "center")
+          ]
+        ]
     [
       input [ style inputStyles
             , placeholder "What's up?"
             , value message
-            , on "input" targetValue (Signal.message myMailbox.address)] 
+            , on "input" targetValue (Signal.message messageMailbox.address)] 
           []
     --, button [style []] [Html.text "Scream!"]
     ]
@@ -54,15 +66,15 @@ css : String -> Html
 css path =
   node "link" [ rel "stylesheet", href path ] []
 
-renderScene: String -> Float -> (Float, a) -> (Int, Int) -> Html
-renderScene message time (enterPressed, _) (width, height) =
+renderTheVoid: String -> Float -> (Float, a) -> (Int, Int) -> Html
+renderTheVoid message time (enterPressed, _) (width, height) =
   let 
-    angle = (toFloat ((round (6 * inSeconds time)) % 360))
-    sinceEnter = round ((time - enterPressed) / 100)
-    shrinkingHeight = toFloat (72 - (3 * sinceEnter))
-    spinningAwayAngle = toFloat (60 + (24 * sinceEnter))
-    showInput = (sinceEnter < 40)
-    spinnyMessage = if showInput then message else ""
+    voidAngle = (toFloat ((round (6 * inSeconds time)) % 360))
+    timeSinceEnterPressed = round ((time - enterPressed) / 100)
+    shrinkingHeight = toFloat (72 - (3 * timeSinceEnterPressed))
+    spiningMessageAngle = toFloat (60 + (24 * timeSinceEnterPressed))
+    showInput = (timeSinceEnterPressed < 40)
+    spiningMessage = if showInput then message else ""
   in
     div [] 
     [
@@ -72,17 +84,22 @@ renderScene message time (enterPressed, _) (width, height) =
     , fromElement (collage width height
       [ 
         rect (toFloat width) (toFloat height) |> filled black |> move(0, 0)
-      , rotate (degrees angle) (toForm (image (width * 2) (height * 2) "/images/void_compressed.jpg"))
-      , rotate (degrees spinningAwayAngle) (toForm (centered (Text.height shrinkingHeight (color white (fromString spinnyMessage)))))
+      , renderOuterVoid voidAngle width height
+      , renderSpiningMessage spiningMessage spiningMessageAngle shrinkingHeight
       ])
     ]
 
-myMailbox : { address : Address String, signal : Signal String }
-myMailbox = Signal.mailbox ""
+--renderOuterVoid : Float -> Int -> Int -> Form
+renderOuterVoid voidAngle width height =
+  rotate (degrees voidAngle) (toForm (image (width * 2) (height * 2) "/images/void_compressed.jpg"))
+
+renderSpiningMessage : String -> Float -> Float -> Form
+renderSpiningMessage message angle spinningHeight = 
+  rotate (degrees angle) (toForm (centered (Text.height spinningHeight (color white (fromString message)))))
 
 port shoutOut : Signal String
 port shoutOut =
-    (Signal.map2 signalMessageOnEnter Keyboard.enter myMailbox.signal)
+    (Signal.map2 signalMessageOnEnter Keyboard.enter messageMailbox.signal)
 
 signalMessageOnEnter : Bool -> String -> String
 signalMessageOnEnter enterPressed message =
