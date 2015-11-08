@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Scream!</title>
+		<style>
+			html, head, body { padding:0; margin:0; }
+			body { font-family: calibri, helvetica, arial, sans-serif; }
+			a:link { text-decoration: none; color: rgb(15,102,230); }
+			a:visited { text-decoration: none; }
+			a:active { text-decoration: none; }
+			a:hover { text-decoration: underline; color: rgb(234,21,122); }
+			html,body { height: 100%; margin: 0px; }
+		</style>
+		<script type="text/javascript" src="elm.js"></script>
+	<script type="text/javascript" src="/_reactor/debug.js"></script>
+</head>
+<body>
+<script type="text/javascript">
+	var runningElmModule =
+	    Elm.fullscreen(Elm.Main);
+
+  var context;
+  window.addEventListener('load', init, false);
+  function init() {
+    try {
+      // Fix up for prefixing
+      window.AudioContext = window.AudioContext||window.webkitAudioContext;
+      context = new AudioContext();
+    }
+    catch(e) {
+      alert('Web Audio API is not supported in this browser');
+    }
+  }
+
+
+  var onError = console.error;
+
+  function loadSound(url) {
+    var request = new XMLHttpRequest();
+    request.open('GET', url, true);
+    request.responseType = 'arraybuffer';
+
+    // Decode asynchronously
+    request.onload = function() {
+      context.decodeAudioData(request.response, function(buffer) {
+        screamBuffer = buffer;
+
+        var source = context.createBufferSource(); 
+        source.buffer = buffer;                    
+        source.connect(context.destination);   
+
+        var gainNode = context.createGain();
+        source.connect(gainNode);
+        gainNode.connect(context.destination);
+        gainNode.gain.value = 0.3;
+
+        source.start(0);                           
+
+      }, onError);
+    }
+    request.send();
+  }
+
+	// http://blog.teamtreehouse.com/getting-started-speech-synthesis-api
+	// http://codepen.io/matt-west/full/wGzuJ
+  function scream(message) {
+  	if (message === "") {
+  		return;
+  	}
+  	console.log("Let it all out", message)
+  	var su = new SpeechSynthesisUtterance();
+  	var hysterical = 33;
+  	var deranged = 27;
+  	su.voice = speechSynthesis.getVoices()[hysterical];
+  	su.lang = "en";
+  	su.rate = 1;
+  	su.pitch = 2;
+  	su.text = message;
+  	speechSynthesis.speak(su);
+	  loadSound("/sounds/scream.mp3");
+  }
+
+  runningElmModule.ports.shoutOut.subscribe(scream)
+</script>
+
+</body>
+</html>
