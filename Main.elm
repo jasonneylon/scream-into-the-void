@@ -4,9 +4,8 @@ import Color exposing (red, black, white)
 import Window
 import Time exposing (..)
 import Text exposing (color, fromString)
-import Debug exposing ( log )
 import Keyboard exposing (..)
-import Html exposing (Html, fromElement, Attribute, text, toElement, div, input, h1, h2, node, button)
+import Html exposing (Html, fromElement, Attribute, text, toElement, div, input, h1, h2, node, button, a)
 import Html.Attributes exposing (..)
 import Html.Events exposing (on, targetValue)
 import Signal exposing (Address, mailbox)
@@ -55,11 +54,21 @@ inputArea message show =
         ]
     [
       input [ style inputStyles
-            , placeholder "What's up?"
+            , placeholder "Type your feelings here"
             , value message
             , on "input" targetValue (Signal.message messageMailbox.address)] 
           []
     --, button [style []] [Html.text "Scream!"]
+    , div [style 
+            [
+              ("position", "absolute")
+            , ("bottom", "0")
+            , ("right", "0")
+            , ("background-color", "azure")
+            , ("opacity", "0.7")
+            ]
+          ] 
+          [a [href "http://screamintothevoid.com/"] [Html.text "An Elm powered homage to http://screamintothevoid.com/"]]
     ]
 
 css : String -> Html
@@ -89,7 +98,7 @@ renderTheVoid message time (enterPressed, _) (width, height) =
       ])
     ]
 
---renderOuterVoid : Float -> Int -> Int -> Form
+renderOuterVoid : Float -> Int -> Int -> Form
 renderOuterVoid voidAngle width height =
   rotate (degrees voidAngle) (toForm (image (width * 2) (height * 2) "/images/void_compressed.jpg"))
 

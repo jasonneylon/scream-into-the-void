@@ -77,7 +77,7 @@
   	su.pitch = 2;
   	su.text = message;
   	speechSynthesis.speak(su);
-	  loadSound("http://localhost:8000/sounds/scream.mp3");
+	  loadSound("/sounds/scream.mp3");
   }
 
   runningElmModule.ports.shoutOut.subscribe(scream)
