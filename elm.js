@@ -4368,7 +4368,7 @@ Elm.Main.make = function (_elm) {
       $Graphics$Collage.toForm(A3($Graphics$Element.image,
       width * 2,
       height * 2,
-      "/images/void_compressed.jpg")));
+      "./images/void_compressed.jpg")));
    });
    var css = function (path) {
       return A3($Html.node,
