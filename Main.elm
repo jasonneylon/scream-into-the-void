@@ -100,7 +100,7 @@ renderTheVoid message time (enterPressed, _) (width, height) =
 
 renderOuterVoid : Float -> Int -> Int -> Form
 renderOuterVoid voidAngle width height =
-  rotate (degrees voidAngle) (toForm (image (width * 2) (height * 2) "/images/void_compressed.jpg"))
+  rotate (degrees voidAngle) (toForm (image (width * 2) (height * 2) "./images/void_compressed.jpg"))
 
 renderSpiningMessage : String -> Float -> Float -> Form
 renderSpiningMessage message angle spinningHeight = 
